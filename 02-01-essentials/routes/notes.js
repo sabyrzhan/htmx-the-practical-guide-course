@@ -12,7 +12,7 @@ export const newNoteHandler = (req, res) => {
           
         />
         <link rel="icon" href="/icon.png" />
-        <script src="/htmx.js" defer></script>
+        <script src="/htmx.min.js" defer></script>
         <link rel="stylesheet" href="/main.css" />
       </head>
       <body>
@@ -23,7 +23,7 @@ export const newNoteHandler = (req, res) => {
 
         <main>
           <p>HTMX is a JavaScript library that you use without writing JavaScript code.</p>
-          <form hx-post="/note">
+          <form hx-post="/note" hx-target="ul" hx-swap="outerHTML" hx-select="ul">
             <p>
               <label for="note">Your note</label>
               <input type="text" id="note" name="note">
@@ -44,4 +44,6 @@ export const newNoteHandler = (req, res) => {
 export const addNoteHandler = (req, res) => {
     const newNote = req.body.note;
     HTMX_KNOWLEDGE.unshift(newNote)
+
+    res.redirect('/new-note')
 }
