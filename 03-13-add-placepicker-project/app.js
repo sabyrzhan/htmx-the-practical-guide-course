@@ -11,11 +11,38 @@ const INTERESTING_LOCATIONS = [];
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: false }));
 
+function getSuggestedLocations() {
+  const availableLocations = AVAILABLE_LOCATIONS.filter(
+      (location) => !INTERESTING_LOCATIONS.includes(location)
+  );
+
+  if (availableLocations.length < 2) return availableLocations;
+
+  const suggestedLocation1 = availableLocations.splice(
+      Math.floor(Math.random() * availableLocations.length),
+      1
+  )[0];
+  const suggestedLocation2 = availableLocations.splice(
+      Math.floor(Math.random() * availableLocations.length),
+      1
+  )[0];
+
+  return [suggestedLocation1, suggestedLocation2];
+}
+
+app.get('/suggested-locations', (req, res) => {
+  const suggestedLocations = getSuggestedLocations();
+  return res.send(
+      suggestedLocations.map((location) => renderLocation(location)).join('')
+  )
+})
+
 app.get('/', (req, res) => {
   const availableLocations = AVAILABLE_LOCATIONS.filter(
     (location) => !INTERESTING_LOCATIONS.includes(location)
   );
-  res.send(renderLocationsPage(availableLocations, INTERESTING_LOCATIONS));
+  const suggestedLocations = getSuggestedLocations()
+  res.send(renderLocationsPage(suggestedLocations, availableLocations, INTERESTING_LOCATIONS));
 });
 
 app.post('/places', (req, res) => {
@@ -23,9 +50,21 @@ app.post('/places', (req, res) => {
   const location = AVAILABLE_LOCATIONS.find((loc) => loc.id === locationId);
   INTERESTING_LOCATIONS.push(location);
 
+  const availableLocations = AVAILABLE_LOCATIONS.filter(
+      (location) => !INTERESTING_LOCATIONS.includes(location)
+  );
+
+  const suggestedLocations = getSuggestedLocations()
+
   res.send(`
-    TODO
-  `);
+    ${renderLocation(location, false)}
+    <ul id="suggested-locations" class="locations" hx-swap-oob="innerHTML">
+      ${suggestedLocations.map((location) => renderLocation(location)).join('')}
+    </ul>
+     <ul id="available-locations" class="locations" hx-swap-oob="true">
+      ${availableLocations.map((location) => renderLocation(location)).join('')}
+    </ul>
+  `)
 });
 
 app.delete('/places/:id', (req, res) => {
@@ -35,7 +74,15 @@ app.delete('/places/:id', (req, res) => {
   );
   INTERESTING_LOCATIONS.splice(locationIndex, 1);
 
-  res.send();
+  const availableLocations = AVAILABLE_LOCATIONS.filter(
+      (location) => !INTERESTING_LOCATIONS.includes(location)
+  );
+
+  res.send(`
+     <ul id="available-locations" class="locations" hx-swap-oob="true">
+      ${availableLocations.map((location) => renderLocation(location)).join('')}
+    </ul>
+  `)
 });
 
 app.listen(3000);
