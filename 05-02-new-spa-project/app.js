@@ -16,7 +16,7 @@ app.get('/', (req, res) => {
         <link rel="stylesheet" href="/main.css">
         <script src="/htmx.js" defer></script>
       </head>
-      <body>
+      <body hx-boost="true">
         <header id="main-header">
           <div id="main-title">
             <a href="/">
@@ -60,7 +60,7 @@ app.get('/products/:id', (req, res) => {
         <link rel="stylesheet" href="/main.css">
         <script src="/htmx.js" defer></script>
       </head>
-      <body>
+      <body hx-boost="true">
         <header id="main-header">
           <div id="main-title">
             <a href="/">
