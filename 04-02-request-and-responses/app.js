@@ -22,18 +22,21 @@ app.get('/', (req, res) => {
         />
         <link rel="stylesheet" href="/main.css" />
         <script src="/htmx.js" defer></script>
+        <script src="/htmx-ext-response-targets.js" defer></script>
       </head>
       <body>
         <main>
-          <form hx-post="/login">
+          <form hx-ext="response-targets" hx-post="/login" hx-target="#extra-information" hx-target-422="#extra-information" hx-target-500="#generic-errors" hx-sync="this:replace">
             <div>
               <img src="/images/auth-icon.jpg" alt="A lock icon" />
             </div>
+            <div id="generic-errors"></div>
             <div class="control">
               <label for="email">Email</label>
               <input 
                 hx-post="/validate" 
                 hx-target="next p"
+                hx-params="email"
                 type="email" 
                 name="email" 
                 id="email" />
@@ -43,12 +46,14 @@ app.get('/', (req, res) => {
               <label for="password">Password</label>
               <input 
                 hx-post="/validate" 
-                hx-target="next p" 
+                hx-target="next p"
+                hx-params="password" 
                 type="password" 
                 name="password" 
                 id="password" />
               <p class="error"></p>
             </div>
+            <div id="extra-information"></div>
             <p>
               <button type="submit">
                 Login
@@ -93,16 +98,22 @@ app.post('/login', (req, res) => {
   }
 
   if (Object.keys(errors).length > 0) {
-    res.send(`
-      <div id="extra-information">
+    return res.send(`
         <ul id="form-errors">
           ${Object.keys(errors)
             .map((key) => `<li>${errors[key]}</li>`)
             .join('')}
         </ul>
-      </div>
     `);
   }
+
+  return res.status(500).send(
+      `
+        <p class="error">Server error. Please try again later.</p>
+      `
+  )
+
+  res.setHeader('HX-Location', '/authenticated')
   res.send();
 });
 
